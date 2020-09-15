@@ -1,3 +1,4 @@
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,9 +26,9 @@ uint8_t nextValueForLfsr(uint8_t lfsr)
 */
 uint8_t reverse(uint8_t b)
 {
-   b =    (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-   b =    (b & 0xCC) >> 2 | (b & 0x33) << 2;
-   return (b & 0xAA) >> 1 | (b & 0x55) << 1;
+    b =    (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+    b =    (b & 0xCC) >> 2 | (b & 0x33) << 2;
+    return (b & 0xAA) >> 1 | (b & 0x55) << 1;
 }
 
 
@@ -108,24 +109,4 @@ void spongent(uchar *input, uchar *output)
 
         permute();
     }
-}
-
-
-int main(void)
-{
-    //initialize some input
-    uchar msg[128] = "Hello, world!";
-
-    //feed input to spongent
-    uchar output[n/8];
-    spongent(msg, output);
-    printf("Original message:", msg);
-
-    //check returned hash is what we expected
-    printf("Output: ");
-    for (unsigned idx = 0; idx < n/8; ++idx)
-        printf("%02X",output[idx]);
-    printf("\n");
-
-    return 0;
 }
