@@ -5,65 +5,63 @@
 #include "spongent.c"
 
 
-char ecc_encrypt(uchar p_hash, uint8_t public_key[64]) {
-    // initialize ECC curve
-    const struct uECC_Curve_t *curve = uECC_secp256r1();
-    uint8_t temp_priv_key[32]; // temporary key must be same size as curve
-    uint8_t temp_pub_key[64]; // temporary key must be double the curve in size
-    uint8_t secret[64]; // to be used as symmetrical key by xxtea
-    uECC_shared_secret(temp_pub_key, temp_priv_key, secret, curve);
-    size_t len;
-    unsigned char *encrypted_p_hash = xxtea_encrypt(p_hash, strlen(p_hash), secret, &len);
-    printf("success");
-
-    return (encrypted_p_hash, temp_pub_key);
-}
-
-char ecc_decrypt(temp_pub_key, encrypted_p_hash, priv_key) {
-    int shared_secret = temp_pub_key * priv_key;
-    size_t len;
-    char *decrypted_p_hash = xxtea_decrypt(encrypted_p_hash, len, shared_secret, &len);
-    return decrypted_p_hash;
-}
-
 int main() {
-    //enter your password p_word allocated 128 bits maximum
-    uchar p_word[128];
-    printf("Enter password: ");
-    scanf("%c", &p_word);
-
-    //feed input to spongent
-    uchar p_hash[n / 8];
-    spongent(p_word, p_hash);
-
-    //check returned hash
-    printf("Password Hash: ");
-    for (unsigned i = 0; i < n / 8; ++i)
-        printf("%02X", p_hash[i]);
+    char* password = "password";
+    printf("%s","Original Password: ");
+    printf("%s",password);
     printf("\n");
 
-    // initialize ECC curve
-    const struct uECC_Curve_t *curve = uECC_secp256r1();
-    uint8_t private_key[32]; // must be same size as curve
-    uint8_t public_key[64]; // must be double the curve in size
+//    // password allocated 128 bits
+//    BitSequence password[128] = "strong password";
+//    printf("Password(String) :%s\n", password);
+//
+//    // hash the password
+//    int i;
+//    BitSequence hashval[hashsize/8]={0};
+//    DataLength databitlen = 128;
+//    SpongentHash(password, databitlen, hashval);
+//    printf("Password(Hash) :");
+//    for(i=0; i<hashsize/8; i++)
+//        printf("%.2X",hashval[i]);
 
-    uECC_make_key(public_key, private_key, curve); // an inbuilt tiny-ecc method
-    //display keys
-    printf("User's public key: ");
-    printf("%02X", public_key);
+    // ECC Key Generation and Key Exchange ECDH - User's wont share keys but will generate the same key from their ends
+    const struct uECC_Curve_t *curve = uECC_secp256r1(); //initialize curve
+    // User 1's Keys
+    uint8_t priv_key1[32]; // temporary key must be same size as curve
+    uint8_t pub_key1[64]; // temporary key must be double the curve in size
+    uint8_t shared_secret1[32]; // temporary key must be double the curve in size
+    uECC_make_key(pub_key1, priv_key1, curve); // generate public/private key pair
+
+    //User 2's Keys
+    uint8_t priv_key2[32];
+    uint8_t pub_key2[64];
+    uint8_t shared_secret2[32];
+    uECC_make_key(pub_key2, priv_key2, curve);
+
+    // User 1's secret key
+    int secret1 = uECC_shared_secret(pub_key2, priv_key1, shared_secret1, curve); // generate a secret key to be used by xxtea for encryption
+
+    //Encryption Phase
+    size_t len;
+    size_t pw_length = strlen(password);
+
+    // xxtea encrypt hash
+    unsigned char *encrypted_hash = xxtea_encrypt(password, pw_length, shared_secret1, &len);
+    printf("Encrypted Password Hash: ");
+    printf(*(&encrypted_hash));
     printf("\n");
-    printf("User's private key: ");
-    printf("%02X", private_key);
+
+
+    //Decryption Phase
+    // User 2's secret key
+    int secret2 = uECC_shared_secret(pub_key1, priv_key2, shared_secret2, curve); // generate a secret key to be used by xxtea for decryption
+
+    //xxtea decrypt hash
+    char *decrypted_hash = xxtea_decrypt(encrypted_hash, len, shared_secret2, &len);
+    printf("Decrypted Password Hash: ");
+    printf( decrypted_hash);
     printf("\n");
 
-    //encrypt the hash
-    char result = ecc_encrypt(p_hash, public_key);
-
-    //decrypt the encrypted hash
-    //ecc_decrypt(temp_pub_key, encrypted_p_hash, priv_key);
-
-    //free(encrypted_p_hash);
-    //free(decrypted_p_hash);
     return 0;
 }
 
