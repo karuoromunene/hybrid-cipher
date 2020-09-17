@@ -4,25 +4,29 @@
 #include "uECC.c"
 #include "spongent.c"
 
-
 int main() {
-    char* password = "password";
-    printf("%s","Original Password: ");
-    printf("%s",password);
-    printf("\n");
 
-//    // password allocated 128 bits
-//    BitSequence password[128] = "strong password";
-//    printf("Password(String) :%s\n", password);
-//
-//    // hash the password
-//    int i;
-//    BitSequence hashval[hashsize/8]={0};
-//    DataLength databitlen = 128;
-//    SpongentHash(password, databitlen, hashval);
-//    printf("Password(Hash) :");
-//    for(i=0; i<hashsize/8; i++)
-//        printf("%.2X",hashval[i]);
+    // password allocated 128 bits
+    BitSequence password[128];
+    printf("Enter Password:");
+    gets(password);
+    printf("Original Password :%s\n", password);
+
+    // hash the password
+    int i;
+    char temporary_hash[16];
+    char password_hash[32];
+    BitSequence hash_value[hashsize/8]={0};
+    DataLength databitlen = 128;
+    SpongentHash(password, databitlen, hash_value);
+
+    printf("Password Spongent Hash :");
+    for(i=0; i<hashsize/8; i++){
+        sprintf(temporary_hash,"%02X", hash_value[i]);
+        strcat(password_hash,temporary_hash) ;
+    }
+    printf("%s",password_hash);
+    printf("\n");
 
     // ECC Key Generation and Key Exchange ECDH - User's wont share keys but will generate the same key from their ends
     const struct uECC_Curve_t *curve = uECC_secp256r1(); //initialize curve
@@ -41,18 +45,18 @@ int main() {
     // User 1's secret key
     int secret1 = uECC_shared_secret(pub_key2, priv_key1, shared_secret1, curve); // generate a secret key to be used by xxtea for encryption
 
-    //Encryption Phase
+    // Encryption Phase
     size_t len;
-    size_t pw_length = strlen(password);
+    size_t pw_length = strlen(password_hash);
 
     // xxtea encrypt hash
-    unsigned char *encrypted_hash = xxtea_encrypt(password, pw_length, shared_secret1, &len);
+    unsigned char *encrypted_hash = xxtea_encrypt(password_hash, pw_length, shared_secret1, &len);
     printf("Encrypted Password Hash: ");
     printf(*(&encrypted_hash));
     printf("\n");
 
 
-    //Decryption Phase
+    // Decryption Phase
     // User 2's secret key
     int secret2 = uECC_shared_secret(pub_key1, priv_key2, shared_secret2, curve); // generate a secret key to be used by xxtea for decryption
 
@@ -62,6 +66,12 @@ int main() {
     printf( decrypted_hash);
     printf("\n");
 
+    // check if the two password hashes match
+    if (strcmp(password_hash, decrypted_hash) == 0){
+        printf("%s", "The Two Hashes Match!");
+    } else{
+        printf("%s", "Hashes Compromised!");
+    }
     return 0;
 }
 
