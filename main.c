@@ -12,7 +12,7 @@ int main() {
     gets(password);
     printf("Original Password :%s\n", password);
 
-    // hash the password
+    // hash the password using spongent
     int i;
     char temporary_hash[16];
     char password_hash[32];
@@ -25,7 +25,7 @@ int main() {
         sprintf(temporary_hash,"%02X", hash_value[i]);
         strcat(password_hash,temporary_hash) ;
     }
-    printf("%s",password_hash);
+    printf("%s",password_hash); // the password hash
     printf("\n");
 
     // ECC Key Generation and Key Exchange ECDH - User's wont share keys but will generate the same key from their ends
@@ -41,8 +41,6 @@ int main() {
     uint8_t pub_key2[64];
     uint8_t shared_secret2[32];
     uECC_make_key(pub_key2, priv_key2, curve);
-
-
 
 
     // Encryption Phase
