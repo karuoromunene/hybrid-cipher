@@ -42,17 +42,19 @@ int main() {
     uint8_t shared_secret2[32];
     uECC_make_key(pub_key2, priv_key2, curve);
 
+
+
+
+    // Encryption Phase
     // User 1's secret key
     int secret1 = uECC_shared_secret(pub_key2, priv_key1, shared_secret1, curve); // generate a secret key to be used by xxtea for encryption
 
-    // Encryption Phase
+    // xxtea encrypt hash
     size_t len;
     size_t pw_length = strlen(password_hash);
-
-    // xxtea encrypt hash
     unsigned char *encrypted_hash = xxtea_encrypt(password_hash, pw_length, shared_secret1, &len);
     printf("Encrypted Password Hash: ");
-    printf(*(&encrypted_hash));
+    printf("%s",*(&encrypted_hash));
     printf("\n");
 
 
@@ -63,7 +65,7 @@ int main() {
     //xxtea decrypt hash
     char *decrypted_hash = xxtea_decrypt(encrypted_hash, len, shared_secret2, &len);
     printf("Decrypted Password Hash: ");
-    printf( decrypted_hash);
+    printf( "%s",decrypted_hash);
     printf("\n");
 
     // check if the two password hashes match
